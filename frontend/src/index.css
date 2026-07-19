@@ -93,6 +93,115 @@ select option {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Card surfaces — consistent elevation system */
+.card-surface {
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.dark .card-surface {
+  background: #171A21;
+  border: 1px solid rgba(42, 47, 57, 0.7);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.card-surface-elevated {
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.dark .card-surface-elevated {
+  background: #181C23;
+  border: 1px solid rgba(42, 47, 57, 0.6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Accent left border for KPI cards */
+.kpi-accent {
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--kpi-color, #4f75ff);
+}
+
+/* Row hover accent */
+.row-hover-accent {
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.row-hover-accent:hover {
+  background-color: rgba(79, 117, 255, 0.02);
+}
+
+.dark .row-hover-accent:hover {
+  background-color: rgba(79, 117, 255, 0.03);
+}
+
+.row-hover-accent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #4f75ff;
+  border-radius: 0 2px 2px 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.row-hover-accent:hover::before {
+  opacity: 1;
+}
+
+/* Status dot indicator */
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Gradient progress bars */
+.progress-bar-gradient {
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
 }

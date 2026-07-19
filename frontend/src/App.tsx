@@ -1,9 +1,18 @@
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Shield, ShieldAlert, Sun, Moon, FileText, Cpu, RefreshCw, Database, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Shield, ShieldAlert, Sun, Moon, FileText, Briefcase, RefreshCw, Database, Menu, X } from 'lucide-react';
 import { api, type Candidate, type ScreenResponse, type DatabaseStats } from './api';
 import Dashboard from './pages/Dashboard';
 import Screener from './pages/Screener';
 import CandidateDetails from './pages/CandidateDetails';
+
+export interface ActivityLog {
+  id: string;
+  type: 'upload' | 'screen' | 'status_change' | 'report_generation';
+  message: string;
+  timestamp: string;
+}
+
+export type CandidateStatus = 'New' | 'Reviewed' | 'Shortlisted' | 'Interview' | 'Rejected';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'dashboard' | 'screener' | 'details'>('dashboard');
@@ -16,6 +25,33 @@ export default function App() {
   const [stats, setStats] = useState<DatabaseStats | null>(null);
   const [loadingStats, setLoadingStats] = useState<boolean>(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+
+  // Recruiter ATS States
+  const [candidateStatuses, setCandidateStatuses] = useState<Record<string, CandidateStatus>>({});
+  const [activityLog, setActivityLog] = useState<ActivityLog[]>([
+    { id: '1', type: 'screen', message: 'Screened candidate pool against Java Developer requirements', timestamp: '10 mins ago' },
+    { id: '2', type: 'upload', message: 'Ingested profile for Rohan Gupta (Java Developer)', timestamp: '1 hour ago' },
+    { id: '3', type: 'status_change', message: 'Shortlisted Priya Patel for Python Lead interview', timestamp: '2 hours ago' }
+  ]);
+
+  const addActivity = (type: ActivityLog['type'], message: string) => {
+    setActivityLog(prev => [
+      {
+        id: Date.now().toString(),
+        type,
+        message,
+        timestamp: 'Just now'
+      },
+      ...prev
+    ]);
+  };
+
+  const updateCandidateStatus = (id: string, status: CandidateStatus) => {
+    setCandidateStatuses(prev => ({ ...prev, [id]: status }));
+    const candidate = candidatesList.find(c => c.candidate_id === id);
+    const name = candidate ? candidate.candidate_name : 'Candidate';
+    addActivity('status_change', `Status of ${name} updated to ${status}`);
+  };
 
   // Apply dark mode class to HTML
   useEffect(() => {
@@ -37,6 +73,22 @@ export default function App() {
       ]);
       setCandidatesList(list);
       setStats(dbStats);
+
+      // Populate missing statuses deterministically
+      setCandidateStatuses(prev => {
+        const next = { ...prev };
+        let changed = false;
+        list.forEach(c => {
+          if (!next[c.candidate_id]) {
+            // Deterministic status selection
+            const num = parseInt(c.candidate_id.replace(/\D/g, '')) || 0;
+            const statuses: CandidateStatus[] = ['New', 'Reviewed', 'Shortlisted', 'Interview', 'Rejected'];
+            next[c.candidate_id] = statuses[num % statuses.length];
+            changed = true;
+          }
+        });
+        return changed ? next : prev;
+      });
     } catch (err) {
       console.error('Error loading database info:', err);
     } finally {
@@ -79,14 +131,14 @@ export default function App() {
               className="flex items-center gap-2.5 px-1.5 py-1 cursor-pointer hover:opacity-85 transition-opacity"
             >
               <div className="bg-primary-500 text-slate-950 p-1.5 rounded-lg">
-                <Cpu size={18} />
+                <Briefcase size={18} />
               </div>
               <div>
                 <h1 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">
                   TalentLens
                 </h1>
                 <span className="block text-[9px] font-medium tracking-widest text-slate-400 dark:text-slate-500 uppercase">
-                  AI Resume Screener
+                  Talent Acquisition
                 </span>
               </div>
             </div>
@@ -122,7 +174,7 @@ export default function App() {
               }`}
             >
               <FileText size={14} className="opacity-80" />
-              Screen Resumes
+              Screen Candidates
             </button>
           </nav>
         </div>
@@ -186,8 +238,8 @@ export default function App() {
               <Menu size={16} />
             </button>
             <h2 className="font-semibold text-xs sm:text-sm tracking-tight truncate max-w-[150px] sm:max-w-none">
-              {currentView === 'dashboard' && 'Recruiter Overview'}
-              {currentView === 'screener' && 'Resume Matching Workspace'}
+              {currentView === 'dashboard' && 'Recruiter Dashboard'}
+              {currentView === 'screener' && 'Talent Screening Workspace'}
               {currentView === 'details' && 'Candidate Evaluation Deep Dive'}
             </h2>
             {blindScreening && (
@@ -200,11 +252,11 @@ export default function App() {
           <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs">
             <div className="flex items-center gap-1 sm:gap-1.5 text-slate-400 dark:text-slate-500">
               <Database size={12} className="shrink-0" />
-              <span className="hidden xs:inline">Resumes: </span>
+              <span className="hidden xs:inline">Profiles: </span>
               <span><b className="text-slate-800 dark:text-slate-200 font-semibold">{totalIndexed}</b> / {totalAvailable}</span>
               {isLimitActive && (
                 <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[8px] sm:text-[9px] font-semibold px-1 py-0.5 rounded ml-0.5 shrink-0">
-                  Dev Limit
+                  Capacity Limit
                 </span>
               )}
             </div>
@@ -230,6 +282,11 @@ export default function App() {
               blindScreening={blindScreening}
               stats={stats}
               refreshData={refreshData}
+              candidateStatuses={candidateStatuses}
+              updateCandidateStatus={updateCandidateStatus}
+              activityLog={activityLog}
+              addActivity={addActivity}
+              setCurrentView={setCurrentView}
             />
           )}
 
@@ -242,6 +299,7 @@ export default function App() {
               onSelectCandidate={handleSelectCandidate}
               blindScreening={blindScreening}
               refreshData={refreshData}
+              addActivity={addActivity}
             />
           )}
 

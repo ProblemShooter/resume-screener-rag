@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, MessageSquare, Cpu, Sparkles, HelpCircle, FileText, CheckCircle2, AlertCircle, Copy, Send, Check, RefreshCw } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Sparkles, HelpCircle, FileText, CheckCircle2, AlertCircle, Copy, Send, Check, RefreshCw } from 'lucide-react';
 import { api, type ExplainResponse, type ChatMessage } from '../api';
 import { anonymizeName } from './Dashboard';
 
@@ -57,7 +57,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
     
     // Reset Chat
     setChatMessages([
-      { role: 'assistant', content: `Hello! I have indexed this candidate's resume. You can ask me specific questions about their experience, tools used, or projects. I will answer using only details from their resume.` }
+      { role: 'assistant', content: `Hello! I have reviewed this candidate's profile. You can ask me specific questions about their experience, tools used, or projects. I will answer using details extracted from their resume.` }
     ]);
     
     loadDetails();
@@ -124,11 +124,11 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
         {/* Tab Navigation buttons */}
         <div className="flex flex-wrap gap-1 bg-slate-50 dark:bg-slate-950 p-1.5 rounded-xl border border-slate-250/20 dark:border-slate-850">
           {[
-            { id: 'evaluation', label: 'Evaluation', icon: Sparkles },
-            { id: 'explain', label: 'Match Rationale', icon: Cpu },
-            { id: 'chat', label: 'Resume Chat', icon: MessageSquare },
-            { id: 'questions', label: 'Interview Guide', icon: HelpCircle },
-            { id: 'resume', label: 'Full Resume', icon: FileText }
+            { id: 'evaluation', label: 'Evaluation Overview', icon: CheckCircle2 },
+            { id: 'explain', label: 'Fit Analysis', icon: Sparkles },
+            { id: 'chat', label: 'Resume Assistant', icon: MessageSquare },
+            { id: 'questions', label: 'Interview Prep Guide', icon: HelpCircle },
+            { id: 'resume', label: 'Raw Resume Text', icon: FileText }
           ].map(tab => {
             const Icon = tab.icon;
             return (
@@ -154,7 +154,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
         {loadingExplain && activeTab === 'evaluation' ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
             <RefreshCw className="animate-spin mb-2" size={32} />
-            <span className="text-xs font-bold">Computing deep evaluation metrics...</span>
+            <span className="text-xs font-bold">Analyzing candidate qualifications...</span>
           </div>
         ) : activeTab === 'evaluation' && evalInfo ? (
           /* TABS: EVALUATION DETAIL */
@@ -232,7 +232,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
 
             {/* Summary */}
             <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200/65 dark:border-slate-700 space-y-2">
-              <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Recruiter Match Verdict</h4>
+              <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Recruiter Assessment Verdict</h4>
               <p className="text-xs leading-relaxed font-semibold text-slate-655 dark:text-slate-300">
                 {evalInfo.verdict_summary}
               </p>
@@ -243,7 +243,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
           loadingExplain ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
               <RefreshCw className="animate-spin mb-2" size={32} />
-              <span className="text-xs font-bold">Analyzing resume alignment...</span>
+              <span className="text-xs font-bold">Analyzing qualifications alignment...</span>
             </div>
           ) : explainData ? (
             <div className="space-y-6 animate-fade-in">
@@ -260,7 +260,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
                         {chunk.section_name} section
                       </span>
                       <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                        Relevance Score: <b className="text-primary-500">{chunk.similarity.toFixed(0)}%</b>
+                        Qualification Fit: <b className="text-primary-500">{chunk.similarity.toFixed(0)}%</b>
                       </span>
                     </div>
                     <p className="text-xs leading-relaxed text-slate-650 dark:text-slate-350 font-medium italic border-l-2 border-primary-500/30 pl-3.5">
@@ -313,7 +313,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                placeholder={`Ask a question about ${nameDisplay}'s resume...`}
+                placeholder={`Ask a question about ${nameDisplay}'s experience...`}
                 className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 font-normal text-slate-700 dark:text-slate-200"
               />
               <button
@@ -325,22 +325,22 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
             </div>
           </div>
         ) : activeTab === 'questions' ? (
-          /* TABS: CUSTOM QUESTIONS */
+          /* TABS: INTERVIEW PREP GUIDE */
           <div className="space-y-6 animate-fade-in">
             <div>
-              <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Customized Interview Guide</h3>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Interview questions targeting the candidate's core weaknesses and gap areas relative to the JD.</p>
+              <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Interview Preparation Guide</h3>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Interview questions targeting candidate qualifications and alignment with role requirements.</p>
             </div>
 
             {loadingQuestions ? (
               <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
                 <RefreshCw className="animate-spin mb-2" size={32} />
-                <span className="text-xs font-bold">Generating customized questions based on requirements gap...</span>
+                <span className="text-xs font-bold">Generating customized interview prep questions...</span>
               </div>
             ) : (
               <div className="space-y-4">
                 {questions.length === 0 ? (
-                  <p className="text-xs font-bold text-slate-450 dark:text-slate-600 py-4 text-center">No customization questions needed for this JD context.</p>
+                  <p className="text-xs font-bold text-slate-450 dark:text-slate-600 py-4 text-center">No customized interview questions required.</p>
                 ) : (
                   questions.map((q, idx) => (
                     <div key={idx} className="p-3.5 bg-slate-50/40 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700 rounded-lg flex justify-between gap-4 items-center hover:bg-slate-50/80 dark:hover:bg-slate-800/10 transition-colors">

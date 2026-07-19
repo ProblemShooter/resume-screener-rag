@@ -11,6 +11,7 @@ interface ScreenerProps {
   onSelectCandidate: (id: string) => void;
   blindScreening: boolean;
   refreshData?: () => Promise<void>;
+  addActivity?: (type: 'upload' | 'screen' | 'status_change' | 'report_generation', message: string) => void;
 }
 
 const CATEGORIES = [
@@ -26,7 +27,8 @@ export default function Screener({
   setJobDescription,
   onSelectCandidate,
   blindScreening,
-  refreshData
+  refreshData,
+  addActivity
 }: ScreenerProps) {
   const [category, setCategory] = useState<string>('All');
   const [loading, setLoading] = useState<boolean>(false);
@@ -49,16 +51,19 @@ export default function Screener({
     setLoading(true);
     
     try {
-      setLoadingStep("Scanning candidate pool (Stage 1)...");
+      setLoadingStep("Scanning candidate pool...");
       await new Promise(r => setTimeout(r, 100));
       
-      setLoadingStep("Analyzing profile alignment (Stage 2)...");
+      setLoadingStep("Analyzing qualifications and matching criteria...");
       await new Promise(r => setTimeout(r, 100));
       
-      setLoadingStep("Evaluating skill matching and gaps via Groq AI (Stage 3)...");
+      setLoadingStep("Evaluating candidate profile alignment...");
       const results = await api.screenCandidates(jobDescription, category);
       
       setScreenResults(results);
+      if (addActivity) {
+        addActivity('screen', `Screened candidates against Job Description for category: ${category}`);
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.detail || "An error occurred while screening candidates. Make sure Groq API key is valid.");
@@ -76,14 +81,17 @@ export default function Screener({
     setUploadSuccess(null);
     try {
       await api.uploadCandidateResume(selectedFile, uploadCategory);
-      setUploadSuccess(`Successfully indexed "${selectedFile.name}" under "${uploadCategory}"`);
+      setUploadSuccess(`Successfully ingested "${selectedFile.name}" under category "${uploadCategory}"`);
       setSelectedFile(null);
       const fileInput = document.getElementById('resume-file-input') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
       if (refreshData) await refreshData();
+      if (addActivity) {
+        addActivity('upload', `Ingested candidate profile from ${selectedFile.name}`);
+      }
     } catch (err: any) {
       console.error(err);
-      setUploadError(err.response?.data?.detail || "Failed to process and index resume file.");
+      setUploadError(err.response?.data?.detail || "Failed to process and ingest resume file.");
     } finally {
       setUploading(false);
     }
@@ -96,8 +104,8 @@ export default function Screener({
         {/* Match Criteria */}
         <div className="bg-white dark:bg-slate-850 p-5 rounded-lg border border-slate-200/60 dark:border-slate-700 space-y-5">
           <div>
-            <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Match Criteria</h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Configure parameters for screening candidate pools.</p>
+            <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Screening Criteria</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Configure target category and job requirements.</p>
           </div>
 
           {/* Category filter */}
@@ -154,7 +162,7 @@ export default function Screener({
             ) : (
               <Play size={12} fill="currentColor" />
             )}
-            {loading ? 'Processing Match...' : 'Search & Match Candidates'}
+            {loading ? 'Screening Candidates...' : 'Run Candidate Screen'}
           </button>
         </div>
 
@@ -222,12 +230,12 @@ export default function Screener({
               {uploading ? (
                 <>
                   <RefreshCw className="animate-spin text-primary-500" size={13} />
-                  Parsing Resume...
+                  Ingesting Profile...
                 </>
               ) : (
                 <>
                   <Upload size={13} />
-                  Upload & Index Resume
+                  Ingest Candidate Profile
                 </>
               )}
             </button>
@@ -247,7 +255,7 @@ export default function Screener({
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-405 animate-pulse">
                 {loadingStep}
               </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">Retrieving contextual vectors and running deep neural re-ranking...</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">Evaluating qualifications against job description criteria...</p>
             </div>
           </div>
         ) : screenResults ? (
@@ -255,8 +263,8 @@ export default function Screener({
           <div className="space-y-5 flex-1 flex flex-col">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Match Results</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Candidates sorted by cross-encoder neural match scores.</p>
+                <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Screening Match Results</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Candidates ranked by overall qualification match score.</p>
               </div>
               <span className="bg-primary-500/10 text-primary-500 px-2.5 py-0.5 rounded text-[11px] font-medium border border-primary-500/20">
                 {screenResults.results.length} Candidates Scored
@@ -314,7 +322,7 @@ export default function Screener({
                         onClick={() => onSelectCandidate(res.candidate_id)}
                         className="inline-flex items-center gap-1 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-950 font-semibold px-2.5 py-1.5 rounded text-xs transition-colors"
                       >
-                        Deep Dive
+                        View Analysis
                         <ChevronRight size={12} className="opacity-80" />
                       </button>
                     </div>
@@ -330,7 +338,7 @@ export default function Screener({
             <div className="text-center space-y-1">
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No Screening Run Yet</p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 max-w-xs">
-                Paste a Job Description and click "Run Screening Engine" to evaluate candidate matches.
+                Paste a Job Description and click "Run Candidate Screen" to evaluate candidate matches.
               </p>
             </div>
           </div>
