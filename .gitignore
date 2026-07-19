@@ -1,0 +1,30 @@
+# Environments and Secrets
+.env
+.venv/
+env/
+venv/
+ENV/
+*.env
+
+# Python / Pycache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Project-specific: User Resume Data (optional to ignore, but recommended for privacy)
+resumes/
