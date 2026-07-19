@@ -1,6 +1,4 @@
-def main():
-    print("Hello from day5!")
-
+import uvicorn
 
 if __name__ == "__main__":
-    main()
+    uvicorn.run("backend.app.main:app", host="0.0.0.0", port=8000, reload=True)

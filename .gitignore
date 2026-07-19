@@ -13,6 +13,20 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
+# Node.js
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Database / Local DB Cache
+chroma_db/
+
+# Log Files
+*.log
+backend_nohup.log
+vite_nohup.log
+
 # IDEs and Editors
 .vscode/
 .idea/
@@ -26,5 +40,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Project-specific: User Resume Data (optional to ignore, but recommended for privacy)
+# Project-specific: User Resume Data (for privacy)
 resumes/
