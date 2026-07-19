@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, Shield, ShieldAlert, Sun, Moon, FileText, Cpu, RefreshCw, Database } from 'lucide-react';
+import { LayoutDashboard, Shield, ShieldAlert, Sun, Moon, FileText, Cpu, RefreshCw, Database, Menu, X } from 'lucide-react';
 import { api, type Candidate, type ScreenResponse, type DatabaseStats } from './api';
 import Dashboard from './pages/Dashboard';
 import Screener from './pages/Screener';
@@ -15,6 +15,7 @@ export default function App() {
   const [candidatesList, setCandidatesList] = useState<Candidate[]>([]);
   const [stats, setStats] = useState<DatabaseStats | null>(null);
   const [loadingStats, setLoadingStats] = useState<boolean>(false);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   // Apply dark mode class to HTML
   useEffect(() => {
@@ -58,92 +59,115 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
+      {/* Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-20 md:hidden animate-fade-in"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-850 flex flex-col justify-between p-5 z-10 shadow-sm">
-        <div className="space-y-7">
-          {/* Logo */}
-          <div className="flex items-center gap-3 px-2">
-            <div className="bg-gradient-to-tr from-primary-500 to-teal-400 text-white p-2 rounded-xl shadow-md shadow-primary-500/20">
-              <Cpu size={22} />
+      <aside className={`fixed inset-y-0 left-0 w-60 bg-white dark:bg-slate-950 border-r border-slate-200/60 dark:border-slate-700 flex flex-col justify-between p-4 z-30 transition-transform duration-300 transform md:relative md:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="space-y-6">
+          {/* Logo & Mobile Close */}
+          <div className="flex items-center justify-between">
+            <div 
+              onClick={() => { setCurrentView('dashboard'); setSelectedCandidateId(null); setSidebarOpen(false); }}
+              className="flex items-center gap-2.5 px-1.5 py-1 cursor-pointer hover:opacity-85 transition-opacity"
+            >
+              <div className="bg-primary-500 text-slate-950 p-1.5 rounded-lg">
+                <Cpu size={18} />
+              </div>
+              <div>
+                <h1 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">
+                  TalentLens
+                </h1>
+                <span className="block text-[9px] font-medium tracking-widest text-slate-400 dark:text-slate-500 uppercase">
+                  AI Resume Screener
+                </span>
+              </div>
             </div>
-            <div>
-              <h1 className="font-extrabold text-base leading-tight bg-gradient-to-r from-primary-400 to-teal-400 bg-clip-text text-transparent">
-                TalentVibe
-              </h1>
-              <span className="text-[9px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
-                AI Resume Screener
-              </span>
-            </div>
+            
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white md:hidden"
+              aria-label="Close sidebar"
+            >
+              <X size={16} />
+            </button>
           </div>
 
           {/* Nav Items */}
-          <nav className="space-y-1.5">
+          <nav className="space-y-1">
             <button
-              onClick={() => setCurrentView('dashboard')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-200 ${
+              onClick={() => { setCurrentView('dashboard'); setSidebarOpen(false); }}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${
                 currentView === 'dashboard'
-                  ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700/60'
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white border border-transparent'
               }`}
             >
-              <LayoutDashboard size={16} />
+              <LayoutDashboard size={14} className="opacity-80" />
               Dashboard
             </button>
             <button
-              onClick={() => setCurrentView('screener')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-200 ${
+              onClick={() => { setCurrentView('screener'); setSidebarOpen(false); }}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] font-medium transition-all duration-150 ${
                 currentView === 'screener'
-                  ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700/60'
+                  : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white border border-transparent'
               }`}
             >
-              <FileText size={16} />
+              <FileText size={14} className="opacity-80" />
               Screen Resumes
             </button>
           </nav>
         </div>
 
         {/* Sidebar Footer */}
-        <div className="space-y-4 pt-6 border-t border-slate-200/80 dark:border-slate-850">
+        <div className="space-y-3.5 pt-4 border-t border-slate-200/80 dark:border-slate-700">
           {/* Blind Screening Toggle */}
-          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/40 dark:border-slate-850/50">
-            <div className="flex items-center justify-between mb-2">
+          <div className="p-3 bg-slate-50 dark:bg-slate-850 rounded-lg border border-slate-200/40 dark:border-slate-700/50">
+            <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
                 {blindScreening ? (
-                  <Shield className="text-primary-500" size={15} />
+                  <Shield className="text-primary-500" size={13} />
                 ) : (
-                  <ShieldAlert className="text-amber-500" size={15} />
+                  <ShieldAlert className="text-amber-500/90" size={13} />
                 )}
-                <span className="text-xs font-bold">Blind Screening</span>
+                <span className="text-[11px] font-semibold">Blind Screening</span>
               </div>
               <button
                 onClick={() => setBlindScreening(!blindScreening)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-250 ${
-                  blindScreening ? 'bg-primary-500' : 'bg-slate-200 dark:bg-slate-850'
+                className={`relative inline-flex h-4 w-7.5 items-center rounded-full transition-colors duration-150 ${
+                  blindScreening ? 'bg-primary-500' : 'bg-slate-200 dark:bg-slate-700'
                 }`}
               >
                 <span
-                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-250 ${
-                    blindScreening ? 'translate-x-4.5' : 'translate-x-1'
+                  className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform duration-150 ${
+                    blindScreening ? 'translate-x-3.5' : 'translate-x-0.5'
                   }`}
                 />
               </button>
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-normal font-medium">
-              Redacts candidate metadata (names, emails, and pronouns) to prevent unconscious bias.
+            <p className="text-[9px] text-slate-400 dark:text-slate-500 leading-normal font-normal">
+              Redacts candidate metadata to prevent unconscious bias.
             </p>
           </div>
 
           {/* Theme Control */}
-          <div className="flex items-center justify-between px-2">
-            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+          <div className="flex items-center justify-between px-1.5">
+            <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
               System Active
             </span>
             <button
               onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-850 transition-colors text-slate-500 dark:text-slate-400"
+              className="p-1.5 rounded-md bg-slate-100 dark:bg-slate-850 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-slate-500 dark:text-slate-400"
             >
-              {darkMode ? <Sun size={15} /> : <Moon size={15} />}
+              {darkMode ? <Sun size={13} /> : <Moon size={13} />}
             </button>
           </div>
         </div>
@@ -152,35 +176,43 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 border-b border-slate-200/60 dark:border-slate-850 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-8 z-10">
-          <div className="flex items-center gap-4">
-            <h2 className="font-extrabold text-base tracking-tight">
+        <header className="h-13 border-b border-slate-200/60 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 z-10">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-1.5 rounded-md bg-slate-100 dark:bg-slate-850 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 md:hidden"
+              aria-label="Open sidebar"
+            >
+              <Menu size={16} />
+            </button>
+            <h2 className="font-semibold text-xs sm:text-sm tracking-tight truncate max-w-[150px] sm:max-w-none">
               {currentView === 'dashboard' && 'Recruiter Overview'}
               {currentView === 'screener' && 'Resume Matching Workspace'}
-              {currentView === 'details' && 'Candidate Evaluation deep dive'}
+              {currentView === 'details' && 'Candidate Evaluation Deep Dive'}
             </h2>
             {blindScreening && (
-              <span className="bg-primary-500/10 text-primary-500 text-[9px] font-bold px-2 py-0.5 rounded-full border border-primary-500/25 uppercase tracking-wide">
-                Blind Screening
+              <span className="bg-primary-500/10 text-primary-500 text-[8px] sm:text-[9px] font-semibold px-1.5 py-0.5 rounded border border-primary-500/25 uppercase tracking-wider shrink-0">
+                Blind
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
-              <Database size={14} />
-              <span>Resumes: <b className="text-slate-800 dark:text-slate-200">{totalIndexed}</b> / {totalAvailable}</span>
+          <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-xs">
+            <div className="flex items-center gap-1 sm:gap-1.5 text-slate-400 dark:text-slate-500">
+              <Database size={12} className="shrink-0" />
+              <span className="hidden xs:inline">Resumes: </span>
+              <span><b className="text-slate-800 dark:text-slate-200 font-semibold">{totalIndexed}</b> / {totalAvailable}</span>
               {isLimitActive && (
-                <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[9px] font-bold px-1.5 py-0.5 rounded ml-1">
-                  Dev Limit Active
+                <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[8px] sm:text-[9px] font-semibold px-1 py-0.5 rounded ml-0.5 shrink-0">
+                  Dev Limit
                 </span>
               )}
             </div>
-            <span className="h-4 w-px bg-slate-200 dark:bg-slate-850" />
+            <span className="h-3.5 w-px bg-slate-200 dark:bg-slate-700" />
             <button
               onClick={refreshData}
               disabled={loadingStats}
-              className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+              className="p-1.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
               title="Refresh database connection stats"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loadingStats ? 'animate-spin' : ''}`} />
@@ -189,7 +221,7 @@ export default function App() {
         </header>
 
         {/* Dynamic Panels */}
-        <div className="flex-1 overflow-y-auto p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
           {currentView === 'dashboard' && (
             <Dashboard
               candidates={candidatesList}

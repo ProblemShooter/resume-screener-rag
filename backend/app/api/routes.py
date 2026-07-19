@@ -136,38 +136,75 @@ def screen_candidates(req: ScreenRequest):
         
         # --- STAGE 3: Groq LLM Evaluation ---
         # Evaluate top 8 candidates for speed, provide estimates for lower ones
-        results = []
+        candidates_to_evaluate = []
+        evaluation_results = {}
+        
         for idx, cand in enumerate(candidates_to_rank):
             cid = cand["candidate_id"]
-            rerank_score = rerank_scores_map.get(cid, 0.0)
-            initial_score = cand["best_similarity"]
-            rank = idx + 1
-            
-            # Use cached evaluation if available to save Groq API tokens
             cache_key = f"{cid}_{hash(req.job_description)}"
             if cache_key in EVALUATION_CACHE:
-                eval_details = EVALUATION_CACHE[cache_key]
-            elif idx < 8: # Run LLM evaluation on top 8
-                eval_details = llm_service.evaluate_candidate_vs_jd(
-                    candidate_name=cand["candidate_name"],
-                    resume_text=cand["full_text"],
-                    job_description=req.job_description
-                )
-                EVALUATION_CACHE[cache_key] = eval_details
+                evaluation_results[cid] = EVALUATION_CACHE[cache_key]
+            elif idx < 8:
+                candidates_to_evaluate.append(cand)
             else:
-                # Mock high-quality fallback for candidates ranked 9+ to ensure high performance
-                eval_details = {
+                rerank_score = rerank_scores_map.get(cid, 0.0)
+                evaluation_results[cid] = {
                     "overall_match_percentage": int(rerank_score),
                     "skills_match_percentage": int(rerank_score * 0.95),
                     "experience_match_percentage": int(rerank_score * 0.9),
                     "education_match_percentage": 70,
                     "project_match_percentage": 60,
                     "strengths": ["Matches standard keywords", "Relevant background"],
-                    "weaknesses": ["Further details require full screening"],
+                    "weaknesses": ["Further details require manual evaluation"],
                     "missing_skills": [],
                     "verdict_summary": "Passed preliminary vector ranking. Screen further if top candidates are unsuitable."
                 }
                 
+        # Run LLM evaluations in parallel for candidates not cached
+        if candidates_to_evaluate:
+            from concurrent.futures import ThreadPoolExecutor
+            def run_eval(cand):
+                cid = cand["candidate_id"]
+                cache_key = f"{cid}_{hash(req.job_description)}"
+                try:
+                    eval_details = llm_service.evaluate_candidate_vs_jd(
+                        candidate_name=cand["candidate_name"],
+                        resume_text=cand["full_text"],
+                        job_description=req.job_description
+                    )
+                    EVALUATION_CACHE[cache_key] = eval_details
+                    return cid, eval_details
+                except Exception as ex:
+                    logger.error(f"Error in thread evaluating candidate {cand['candidate_name']}: {str(ex)}")
+                    fallback = {
+                        "overall_match_percentage": 50,
+                        "skills_match_percentage": 50,
+                        "experience_match_percentage": 50,
+                        "education_match_percentage": 50,
+                        "project_match_percentage": 50,
+                        "strengths": ["Strong engineering interest"],
+                        "weaknesses": ["Requires manual evaluation due to API timeout"],
+                        "missing_skills": [],
+                        "verdict_summary": f"Could not perform complete AI evaluation. Error: {str(ex)}"
+                    }
+                    EVALUATION_CACHE[cache_key] = fallback
+                    return cid, fallback
+
+            max_workers = min(8, len(candidates_to_evaluate))
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                thread_results = list(executor.map(run_eval, candidates_to_evaluate))
+                for cid, eval_details in thread_results:
+                    evaluation_results[cid] = eval_details
+
+        # Build list of ScreenResult in sorted order
+        results = []
+        for idx, cand in enumerate(candidates_to_rank):
+            cid = cand["candidate_id"]
+            rerank_score = rerank_scores_map.get(cid, 0.0)
+            initial_score = cand["best_similarity"]
+            rank = idx + 1
+            eval_details = evaluation_results.get(cid)
+            
             results.append(ScreenResult(
                 candidate_id=cid,
                 candidate_name=cand["candidate_name"],
@@ -324,7 +361,7 @@ async def upload_candidate_resume(
         if not resume_text.strip():
             raise HTTPException(status_code=400, detail="Extracted resume text is empty")
             
-        result = db_service.add_new_candidate(resume_text, category)
+        result = db_service.add_new_candidate(resume_text, category, is_uploaded=True)
         return result
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))

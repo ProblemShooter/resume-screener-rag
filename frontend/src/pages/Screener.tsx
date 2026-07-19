@@ -49,11 +49,11 @@ export default function Screener({
     setLoading(true);
     
     try {
-      setLoadingStep("Retrieving candidate matches from ChromaDB (Stage 1)...");
-      await new Promise(r => setTimeout(r, 700));
+      setLoadingStep("Scanning candidate pool (Stage 1)...");
+      await new Promise(r => setTimeout(r, 100));
       
-      setLoadingStep("Reranking candidates with Local BGE Cross-Encoder (Stage 2)...");
-      await new Promise(r => setTimeout(r, 700));
+      setLoadingStep("Analyzing profile alignment (Stage 2)...");
+      await new Promise(r => setTimeout(r, 100));
       
       setLoadingStep("Evaluating skill matching and gaps via Groq AI (Stage 3)...");
       const results = await api.screenCandidates(jobDescription, category);
@@ -90,49 +90,55 @@ export default function Screener({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
       {/* Left Input Panels: Match Criteria & Ingest Resume */}
-      <div className="space-y-8 lg:col-span-1 h-fit">
+      <div className="space-y-6 lg:col-span-1 h-fit">
         {/* Match Criteria */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-850 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-slate-850 p-5 rounded-lg border border-slate-200/60 dark:border-slate-700 space-y-5">
           <div>
-            <h3 className="font-extrabold text-base">Match Criteria</h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500">Configure parameters for screening candidate pools.</p>
+            <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Match Criteria</h3>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Configure parameters for screening candidate pools.</p>
           </div>
 
           {/* Category filter */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
-              <Filter size={13} />
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-slate-450 dark:text-slate-500 flex items-center gap-1.5 uppercase tracking-widest">
+              <Filter size={12} />
               Filter Category
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-850 rounded-xl px-3 py-2.5 text-xs focus:ring-1 focus:ring-primary-500 focus:outline-none font-bold text-slate-700 dark:text-slate-350"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 rounded-md px-3 py-2 text-xs focus:ring-1 focus:ring-primary-500 focus:outline-none font-medium text-slate-700 dark:text-slate-250"
             >
               {CATEGORIES.map(c => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{c}</option>
               ))}
             </select>
           </div>
 
           {/* Job Description input */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
-              <FileText size={13} />
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-semibold text-slate-450 dark:text-slate-500 flex items-center gap-1.5 uppercase tracking-widest">
+              <FileText size={12} />
               Job Description (JD)
             </label>
             <textarea
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleScreen();
+                }
+              }}
               placeholder="Paste your job description requirements, skills, and qualifications here..."
-              className="w-full h-72 bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-850 rounded-xl p-4 text-xs focus:ring-1 focus:ring-primary-500 focus:outline-none leading-relaxed resize-none font-medium"
+              className="w-full h-72 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 rounded-md p-3.5 text-xs focus:ring-1 focus:ring-primary-500 focus:outline-none leading-relaxed resize-none font-normal"
             />
           </div>
 
           {error && (
-            <div className="flex gap-2.5 p-3.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-xs font-medium">
+            <div className="flex gap-2.5 p-3.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded text-xs font-medium">
               <AlertCircle size={15} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -141,47 +147,47 @@ export default function Screener({
           <button
             onClick={handleScreen}
             disabled={loading}
-            className="w-full bg-primary-500 hover:bg-primary-600 disabled:bg-slate-200 dark:disabled:bg-slate-850 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary-500/20 active:scale-98 transition-all"
+            className="w-full bg-primary-500 hover:bg-primary-600 disabled:bg-slate-200 dark:disabled:bg-slate-800 text-slate-950 font-semibold py-2 px-4 rounded text-xs flex items-center justify-center gap-2 transition-colors"
           >
             {loading ? (
-              <RefreshCw className="animate-spin text-white" size={14} />
+              <RefreshCw className="animate-spin text-slate-950" size={13} />
             ) : (
-              <Play size={13} fill="white" />
+              <Play size={12} fill="currentColor" />
             )}
-            {loading ? 'Processing Pipeline...' : 'Run Screening Engine'}
+            {loading ? 'Processing Match...' : 'Search & Match Candidates'}
           </button>
         </div>
 
         {/* Upload Resume Incremental */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-850 shadow-sm space-y-5">
+        <div className="bg-white dark:bg-slate-850 p-5 rounded-lg border border-slate-200/60 dark:border-slate-700 space-y-4">
           <div>
-            <h3 className="font-extrabold text-base flex items-center gap-2">
-              <Upload size={17} className="text-primary-500" />
+            <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+              <Upload size={14} className="text-primary-500" />
               Quick Ingestion
             </h3>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
               Directly upload and index new resumes (PDF, DOCX, TXT) into the active database.
             </p>
           </div>
 
           <form onSubmit={handleFileUpload} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+              <label className="text-[10px] font-semibold text-slate-450 dark:text-slate-500 uppercase tracking-widest block">
                 Ingestion Category
               </label>
               <select
                 value={uploadCategory}
                 onChange={(e) => setUploadCategory(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 font-bold text-slate-700 dark:text-slate-350"
+                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 font-medium text-slate-700 dark:text-slate-250"
               >
                 {CATEGORIES.filter(c => c !== "All").map(c => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">{c}</option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
+              <label className="text-[10px] font-semibold text-slate-450 dark:text-slate-500 uppercase tracking-widest block">
                 Resume File
               </label>
               <input
@@ -190,19 +196,19 @@ export default function Screener({
                 accept=".pdf,.docx,.txt"
                 onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                 required
-                className="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border file:border-slate-200/55 dark:file:border-slate-800 file:text-[10px] file:font-black file:uppercase file:tracking-wider file:bg-slate-50 dark:file:bg-slate-950 file:text-slate-600 dark:file:text-slate-300 hover:file:bg-slate-100 cursor-pointer"
+                className="block w-full text-xs text-slate-500 dark:text-slate-450 file:mr-3 file:py-1 file:px-2.5 file:rounded file:border file:border-slate-200 dark:file:border-slate-700 file:text-[11px] file:font-medium file:bg-slate-50 dark:file:bg-slate-900 file:text-slate-700 dark:file:text-slate-300 hover:file:bg-slate-100 dark:hover:file:bg-slate-800 file:cursor-pointer"
               />
             </div>
 
             {uploadError && (
-              <div className="flex gap-2 p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-[11px] font-medium">
+              <div className="flex gap-2 p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded text-[11px] font-medium">
                 <AlertCircle size={14} className="shrink-0 mt-0.5" />
                 <span>{uploadError}</span>
               </div>
             )}
 
             {uploadSuccess && (
-              <div className="flex gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-xl text-[11px] font-medium">
+              <div className="flex gap-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-550 rounded text-[11px] font-medium">
                 <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
                 <span>{uploadSuccess}</span>
               </div>
@@ -211,7 +217,7 @@ export default function Screener({
             <button
               type="submit"
               disabled={uploading || !selectedFile}
-              className="w-full bg-slate-950 hover:bg-slate-900 dark:bg-slate-50 dark:hover:bg-slate-100 text-white dark:text-slate-950 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 border border-slate-200/10 active:scale-98 transition-all disabled:opacity-50"
+              className="w-full mt-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-950 font-semibold py-2 px-4 rounded text-xs flex items-center justify-center gap-2 border border-slate-200/10 transition-colors disabled:opacity-50"
             >
               {uploading ? (
                 <>
@@ -221,7 +227,7 @@ export default function Screener({
               ) : (
                 <>
                   <Upload size={13} />
-                  Ingest & Vectorize
+                  Upload & Index Resume
                 </>
               )}
             </button>
@@ -230,15 +236,15 @@ export default function Screener({
       </div>
 
       {/* Right Content Panel: Match Leaderboard / Results */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-850 shadow-sm lg:col-span-2 space-y-6 min-h-[450px] flex flex-col">
+      <div className="bg-white dark:bg-slate-850 p-5 rounded-lg border border-slate-200/60 dark:border-slate-700 lg:col-span-2 space-y-5 min-h-[450px] flex flex-col">
         {loading ? (
           /* Loading Pipeline State */
-          <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-5">
+          <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4">
             <div className="relative">
-              <div className="w-14 h-14 border-4 border-primary-100 dark:border-primary-950 rounded-full animate-spin border-t-primary-500" />
+              <div className="w-12 h-12 border-3 border-primary-100 dark:border-primary-950 rounded-full animate-spin border-t-primary-500" />
             </div>
-            <div className="text-center space-y-2">
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 animate-pulse">
+            <div className="text-center space-y-1.5">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-405 animate-pulse">
                 {loadingStep}
               </p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500">Retrieving contextual vectors and running deep neural re-ranking...</p>
@@ -246,70 +252,70 @@ export default function Screener({
           </div>
         ) : screenResults ? (
           /* Results Scored State */
-          <div className="space-y-6 flex-1 flex flex-col">
+          <div className="space-y-5 flex-1 flex flex-col">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-extrabold text-base">Match Results</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500">Candidates sorted by cross-encoder neural match scores.</p>
+                <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Match Results</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Candidates sorted by cross-encoder neural match scores.</p>
               </div>
-              <span className="bg-primary-500/10 text-primary-500 px-3 py-1 rounded-full text-xs font-bold border border-primary-500/20">
+              <span className="bg-primary-500/10 text-primary-500 px-2.5 py-0.5 rounded text-[11px] font-medium border border-primary-500/20">
                 {screenResults.results.length} Candidates Scored
               </span>
             </div>
 
             {screenResults.results.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-650">
-                <Search size={44} strokeWidth={1.5} className="mb-2" />
-                <p className="text-xs font-bold">No candidate matches found in this category.</p>
+              <div className="flex-1 flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-605">
+                <Search size={40} strokeWidth={1.5} className="mb-2" />
+                <p className="text-xs font-medium">No candidate matches found in this category.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 {screenResults.results.map((res) => (
                   <div
                     key={res.candidate_id}
-                    className="p-5 bg-slate-50/30 dark:bg-slate-950 hover:bg-slate-50/70 dark:hover:bg-slate-850/20 border border-slate-200/50 dark:border-slate-850 rounded-2xl flex flex-col md:flex-row justify-between gap-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm"
+                    className="p-4 bg-slate-50/30 dark:bg-slate-900 hover:bg-slate-50/70 dark:hover:bg-slate-800/40 border border-slate-200/50 dark:border-slate-700 rounded-lg flex flex-col md:flex-row justify-between gap-4 transition-colors"
                   >
                     {/* Candidate Identity */}
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 bg-primary-500/10 border border-primary-500/20 text-primary-500 font-extrabold rounded-xl flex items-center justify-center shrink-0">
+                    <div className="flex gap-3.5">
+                      <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 font-semibold rounded-lg flex items-center justify-center shrink-0">
                         #{res.rank}
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-sm text-slate-800 dark:text-slate-100">
+                          <span className="font-medium text-sm text-slate-900 dark:text-white">
                             {anonymizeName(res.candidate_name, blindScreening)}
                           </span>
-                          <span className="text-[9px] bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 px-2 py-0.5 rounded font-bold uppercase tracking-wider text-slate-500">
+                          <span className="text-[9px] bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-750 px-1.5 py-0.2 rounded font-medium uppercase tracking-wider text-slate-550 dark:text-slate-400">
                             {res.category}
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
-                          <b className="text-slate-600 dark:text-slate-300">Verdict:</b> {res.evaluation.verdict_summary}
+                          <b className="text-slate-655 dark:text-slate-300 font-medium">Verdict:</b> {res.evaluation.verdict_summary}
                         </p>
                       </div>
                     </div>
 
                     {/* Scores & Profile CTA */}
-                    <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100 dark:border-slate-850">
-                      <div className="flex gap-4 shrink-0">
-                        {/* Vector Similarity */}
+                    <div className="flex items-center justify-between md:justify-end gap-5 border-t md:border-t-0 pt-2.5 md:pt-0 border-slate-100 dark:border-slate-800">
+                      <div className="flex gap-3.5 shrink-0">
+                        {/* Base Relevance Score */}
                         <div className="text-center">
-                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Cosine Sim</span>
-                          <span className="block font-bold text-xs text-slate-500 dark:text-slate-400 mt-0.5">{res.initial_score.toFixed(0)}%</span>
+                          <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Base Score</span>
+                          <span className="block font-medium text-xs text-slate-500 dark:text-slate-400 mt-0.5">{res.initial_score.toFixed(0)}%</span>
                         </div>
-                        {/* Neural Reranker Score */}
+                        {/* Talent Match Score */}
                         <div className="text-center">
-                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Neural Rank</span>
-                          <span className="block font-black text-sm text-primary-500 mt-0.5">{res.rerank_score.toFixed(0)}%</span>
+                          <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">Talent Match</span>
+                          <span className="block font-semibold text-sm text-primary-500 mt-0.5">{res.rerank_score.toFixed(0)}%</span>
                         </div>
                       </div>
 
                       <button
                         onClick={() => onSelectCandidate(res.candidate_id)}
-                        className="inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-md shadow-primary-500/10 active:scale-95 transition-all"
+                        className="inline-flex items-center gap-1 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-slate-200 text-white dark:text-slate-950 font-semibold px-2.5 py-1.5 rounded text-xs transition-colors"
                       >
                         Deep Dive
-                        <ChevronRight size={13} />
+                        <ChevronRight size={12} className="opacity-80" />
                       </button>
                     </div>
                   </div>
@@ -319,10 +325,10 @@ export default function Screener({
           </div>
         ) : (
           /* Empty / Unexecuted State */
-          <div className="flex-1 flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-650 space-y-3">
-            <Search size={48} strokeWidth={1.5} className="text-slate-200 dark:text-slate-800" />
+          <div className="flex-1 flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600 space-y-2.5">
+            <Search size={44} strokeWidth={1.5} className="text-slate-200 dark:text-slate-800" />
             <div className="text-center space-y-1">
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400">No Screening Run Yet</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No Screening Run Yet</p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 max-w-xs">
                 Paste a Job Description and click "Run Screening Engine" to evaluate candidate matches.
               </p>

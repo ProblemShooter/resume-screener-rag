@@ -96,20 +96,20 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
       {/* Top Controls */}
       <button
         onClick={onBack}
-        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded bg-transparent"
       >
-        <ArrowLeft size={15} />
+        <ArrowLeft size={13} />
         Back to list
       </button>
 
       {/* Candidate Profile Header Card */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/60 dark:border-slate-850 shadow-sm flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-gradient-to-tr from-primary-500 to-teal-400 text-white font-black text-xl rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/10">
+      <div className="bg-white dark:bg-slate-850 p-5 rounded-lg border border-slate-200/60 dark:border-slate-700 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 text-slate-750 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-semibold text-lg rounded-full flex items-center justify-center">
             {explainData?.candidate_name[0] || 'C'}
           </div>
           <div>
-            <h2 className="text-lg font-black">{nameDisplay}</h2>
+            <h2 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">{nameDisplay}</h2>
             <div className="flex flex-wrap items-center gap-2 mt-1">
               <span className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-850 text-slate-500 dark:text-slate-400 text-xs px-2.5 py-0.5 rounded-full font-bold">
                 {explainData?.evaluation.overall_match_percentage ? `${explainData.evaluation.overall_match_percentage}% Match` : 'N/A'}
@@ -125,7 +125,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
         <div className="flex flex-wrap gap-1 bg-slate-50 dark:bg-slate-950 p-1.5 rounded-xl border border-slate-250/20 dark:border-slate-850">
           {[
             { id: 'evaluation', label: 'Evaluation', icon: Sparkles },
-            { id: 'explain', label: 'Explainable AI', icon: Cpu },
+            { id: 'explain', label: 'Match Rationale', icon: Cpu },
             { id: 'chat', label: 'Resume Chat', icon: MessageSquare },
             { id: 'questions', label: 'Interview Guide', icon: HelpCircle },
             { id: 'resume', label: 'Full Resume', icon: FileText }
@@ -135,7 +135,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 ${
                   activeTab === tab.id
                     ? 'bg-white dark:bg-slate-900 text-primary-500 shadow-sm border border-slate-200/50 dark:border-slate-800'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-850/40'
@@ -150,7 +150,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
       </div>
 
       {/* Main Tab Panels */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/60 dark:border-slate-850 shadow-sm p-6 min-h-[450px]">
+      <div className="bg-white dark:bg-slate-850 rounded-lg border border-slate-200/60 dark:border-slate-700 p-5 min-h-[450px]">
         {loadingExplain && activeTab === 'evaluation' ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
             <RefreshCw className="animate-spin mb-2" size={32} />
@@ -170,10 +170,10 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
                   { label: 'Projects', val: evalInfo.project_match_percentage, color: 'bg-emerald-500' },
                   { label: 'Education', val: evalInfo.education_match_percentage, color: 'bg-teal-500' }
                 ].map(item => (
-                  <div key={item.label} className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-850/50 text-center space-y-2">
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase block">{item.label}</span>
-                    <div className="text-xl font-black text-slate-800 dark:text-slate-200">{item.val}%</div>
-                    <div className="h-1.5 w-full bg-slate-200/50 dark:bg-slate-850 rounded-full overflow-hidden">
+                  <div key={item.label} className="p-3 bg-slate-50 dark:bg-slate-900 rounded-md border border-slate-200/65 dark:border-slate-700/50 text-center space-y-2">
+                    <span className="text-[9px] font-semibold text-slate-405 dark:text-slate-500 uppercase tracking-wider block">{item.label}</span>
+                    <div className="text-lg font-semibold tracking-tight text-slate-800 dark:text-slate-200">{item.val}%</div>
+                    <div className="h-1 w-full bg-slate-200/50 dark:bg-slate-700 rounded-full overflow-hidden">
                       <div className={`h-full ${item.color} rounded-full`} style={{ width: `${item.val}%` }} />
                     </div>
                   </div>
@@ -185,8 +185,8 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Strengths */}
               <div className="space-y-3.5">
-                <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-850 pb-2">
-                  <CheckCircle2 size={15} />
+                <h4 className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-700 pb-1.5">
+                  <CheckCircle2 size={13} />
                   Candidate Strengths
                 </h4>
                 <ul className="space-y-3">
@@ -201,8 +201,8 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
 
               {/* Weaknesses / Gaps */}
               <div className="space-y-3.5">
-                <h4 className="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-850 pb-2">
-                  <AlertCircle size={15} />
+                <h4 className="text-[11px] font-semibold text-amber-500/90 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-700 pb-1.5">
+                  <AlertCircle size={13} />
                   Skill Gaps & Discrepancies
                 </h4>
                 <ul className="space-y-3">
@@ -222,7 +222,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
                 <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Missing Core Skills</h4>
                 <div className="flex flex-wrap gap-2">
                   {evalInfo.missing_skills.map((skill, idx) => (
-                    <span key={idx} className="bg-red-500/10 text-red-500 px-2.5 py-1 rounded-xl text-xs font-bold border border-red-500/20">
+                    <span key={idx} className="bg-red-550/15 text-red-400 px-2 py-0.5 rounded text-xs font-medium border border-red-500/10">
                       {skill}
                     </span>
                   ))}
@@ -231,9 +231,9 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
             )}
 
             {/* Summary */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-150 dark:border-slate-850 space-y-2">
-              <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">AI Recommendation Verdict</h4>
-              <p className="text-xs leading-relaxed font-semibold text-slate-600 dark:text-slate-300">
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200/65 dark:border-slate-700 space-y-2">
+              <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Recruiter Match Verdict</h4>
+              <p className="text-xs leading-relaxed font-semibold text-slate-655 dark:text-slate-300">
                 {evalInfo.verdict_summary}
               </p>
             </div>
@@ -243,18 +243,18 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
           loadingExplain ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
               <RefreshCw className="animate-spin mb-2" size={32} />
-              <span className="text-xs font-bold">Computing explainability vectors...</span>
+              <span className="text-xs font-bold">Analyzing resume alignment...</span>
             </div>
           ) : explainData ? (
             <div className="space-y-6 animate-fade-in">
               <div>
-                <h3 className="font-extrabold text-base">Score Explainability Panel</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Exact mapping showing how candidate resume sections match your search criteria.</p>
+                <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Profile Relevance Details</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Specific resume excerpts aligning with your search criteria.</p>
               </div>
 
               <div className="space-y-4">
                 {explainData.matching_chunks.slice(0, 5).map((chunk, idx) => (
-                  <div key={idx} className="p-5 bg-slate-50/40 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-850 rounded-2xl space-y-3 shadow-xs">
+                  <div key={idx} className="p-4 bg-slate-50/40 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700 rounded-lg space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="bg-primary-500/10 text-primary-500 text-[10px] px-2.5 py-0.5 rounded-lg font-extrabold uppercase tracking-wide border border-primary-500/20">
                         {chunk.section_name} section
@@ -263,7 +263,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
                         Relevance Score: <b className="text-primary-500">{chunk.similarity.toFixed(0)}%</b>
                       </span>
                     </div>
-                    <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-350 font-medium italic border-l-2 border-primary-500/30 pl-3.5">
+                    <p className="text-xs leading-relaxed text-slate-650 dark:text-slate-350 font-medium italic border-l-2 border-primary-500/30 pl-3.5">
                       "{chunk.text}"
                     </p>
                   </div>
@@ -275,7 +275,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
           )
         ) : activeTab === 'chat' ? (
           /* TABS: RESUME CHAT */
-          <div className="h-[460px] flex flex-col animate-fade-in border border-slate-200/80 dark:border-slate-850 rounded-2xl overflow-hidden bg-slate-50/40 dark:bg-slate-950/20">
+          <div className="h-[460px] flex flex-col animate-fade-in border border-slate-200/80 dark:border-slate-700 rounded-lg overflow-hidden bg-slate-50/45 dark:bg-slate-900/10">
             {/* Messages box */}
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {chatMessages.map((msg, idx) => (
@@ -284,10 +284,10 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[75%] px-4 py-3 rounded-2xl text-xs leading-relaxed ${
+                    className={`max-w-[75%] px-4 py-3 rounded-lg text-xs leading-relaxed ${
                       msg.role === 'user'
-                        ? 'bg-primary-500 text-white font-medium rounded-tr-none shadow-sm'
-                        : 'bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 rounded-tl-none text-slate-700 dark:text-slate-300'
+                        ? 'bg-slate-105 dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 shadow-none'
+                        : 'bg-white dark:bg-slate-850 border border-slate-200/60 dark:border-slate-700 text-slate-750 dark:text-slate-350'
                     }`}
                   >
                     {msg.content}
@@ -296,7 +296,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
               ))}
               {sendingChat && (
                 <div className="flex justify-start">
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-850 px-4 py-3 rounded-2xl rounded-tl-none flex gap-1.5 items-center">
+                  <div className="bg-white dark:bg-slate-850 border border-slate-200/60 dark:border-slate-700 px-4 py-3 rounded-lg flex gap-1.5 items-center">
                     <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" />
                     <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-100" />
                     <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-200" />
@@ -307,20 +307,20 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
             </div>
 
             {/* Input box */}
-            <div className="p-3.5 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-850 flex gap-2">
+            <div className="p-3 bg-white dark:bg-slate-950 border-t border-slate-200/60 dark:border-slate-700 flex gap-2">
               <input
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
                 placeholder={`Ask a question about ${nameDisplay}'s resume...`}
-                className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-850 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 font-bold text-slate-700 dark:text-slate-350"
+                className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary-500 font-normal text-slate-700 dark:text-slate-200"
               />
               <button
                 onClick={handleSendChat}
-                className="p-2.5 bg-primary-500 hover:bg-primary-600 text-white rounded-xl active:scale-95 transition-all shadow-md shadow-primary-500/10"
+                className="p-2 bg-primary-500 hover:bg-primary-600 text-slate-950 rounded-md active:scale-95 transition-all"
               >
-                <Send size={15} />
+                <Send size={14} />
               </button>
             </div>
           </div>
@@ -328,7 +328,7 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
           /* TABS: CUSTOM QUESTIONS */
           <div className="space-y-6 animate-fade-in">
             <div>
-              <h3 className="font-extrabold text-base">Customized Interview Guide</h3>
+              <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Customized Interview Guide</h3>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">Interview questions targeting the candidate's core weaknesses and gap areas relative to the JD.</p>
             </div>
 
@@ -343,11 +343,11 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
                   <p className="text-xs font-bold text-slate-450 dark:text-slate-600 py-4 text-center">No customization questions needed for this JD context.</p>
                 ) : (
                   questions.map((q, idx) => (
-                    <div key={idx} className="p-4 bg-slate-50/40 dark:bg-slate-950 border border-slate-200/65 dark:border-slate-850 rounded-2xl flex justify-between gap-4 items-center hover:bg-slate-50/80 dark:hover:bg-slate-850/10 transition-colors">
+                    <div key={idx} className="p-3.5 bg-slate-50/40 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-700 rounded-lg flex justify-between gap-4 items-center hover:bg-slate-50/80 dark:hover:bg-slate-800/10 transition-colors">
                       <p className="text-xs leading-relaxed font-bold text-slate-700 dark:text-slate-200">{q}</p>
                       <button
                         onClick={() => handleCopyQuestion(q, idx)}
-                        className="p-2 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 border border-slate-200/60 dark:border-slate-800 rounded-xl shrink-0 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-white"
+                        className="p-1.5 bg-white dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shrink-0 transition-colors text-slate-400 hover:text-slate-700 dark:hover:text-white"
                       >
                         {copiedIndex === idx ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
                       </button>
@@ -361,11 +361,11 @@ export default function CandidateDetails({ candidateId, jobDescription, blindScr
           /* TABS: FULL RESUME VIEW */
           <div className="animate-fade-in space-y-4">
             <div>
-              <h3 className="font-extrabold text-base">Raw Resume Content</h3>
+              <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">Raw Resume Content</h3>
               <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Extracted and parsed text representation of the candidate resume.</p>
             </div>
             
-            <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-850 max-h-[500px] overflow-y-auto">
+            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200/60 dark:border-slate-700 max-h-[500px] overflow-y-auto">
               <pre className="text-xs leading-relaxed font-mono whitespace-pre-wrap text-slate-500 dark:text-slate-400">
                 {explainData?.matching_chunks
                   ? explainData.matching_chunks.map(c => c.text).join('\n\n')

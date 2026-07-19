@@ -9,7 +9,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM EXIT
 
 echo "================================================="
-echo "   TalentVibe - Starting fullstack application   "
+echo "   TalentLens - Starting fullstack application   "
 echo "================================================="
 
 # Start backend

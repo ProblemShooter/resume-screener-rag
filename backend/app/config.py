@@ -24,8 +24,8 @@ class Settings:
 
     # Optimization Settings
     DEV_MAX_RESUMES: int = int(os.getenv("DEV_MAX_RESUMES", 25))
-    TORCH_THREAD_LIMIT: int = int(os.getenv("TORCH_THREAD_LIMIT", 1))
-    INGEST_THROTTLE_SLEEP: float = float(os.getenv("INGEST_THROTTLE_SLEEP", 0.1))
+    TORCH_THREAD_LIMIT: int = int(os.getenv("TORCH_THREAD_LIMIT", 4))
+    INGEST_THROTTLE_SLEEP: float = float(os.getenv("INGEST_THROTTLE_SLEEP", 0.0))
     CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", 1000))
     CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", 200))
 

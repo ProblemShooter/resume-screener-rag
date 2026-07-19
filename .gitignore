@@ -12,6 +12,12 @@ __pycache__/
 *$py.class
 .pytest_cache/
 .mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# UV Lock (auto-generated)
+uv.lock
 
 # Node.js
 node_modules/

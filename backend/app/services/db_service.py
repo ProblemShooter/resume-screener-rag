@@ -29,42 +29,70 @@ class DbService:
             metadata={"hnsw:space": "cosine"} # Use cosine similarity
         )
 
-    def extract_email_and_name(self, text: str, index: int) -> tuple[str, str]:
+    def extract_email_and_name(self, text: str, index: int, is_uploaded: bool = False) -> tuple[str, str]:
         """
         Attempts to extract an email and a name from a raw resume text.
-        If email is found, names are generated from the email username or a fallback sample list.
+        For CSV resumes: Name label → email username → sample name fallback
+        For uploaded resumes (PDF/DOCX): also tries the first line (real resumes start with the name)
         """
         # Find email using regex
         email_match = re.search(r'\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b', text)
         email = email_match.group(0) if email_match else f"candidate_{index}@example.com"
         
-        # Determine name
         name = ""
-        # 1. Look for name indicator (e.g., "Name: John Doe" or "Name - John Doe")
-        name_match = re.search(r'\bname[:\-]\s*([a-zA-Z\s]{3,25})\b', text, re.IGNORECASE)
+        
+        # 1. Look for explicit name indicator (e.g., "Name: John Doe" or "Name - John Doe")
+        #    But reject false positives like "Name: Handwriting recognition" by filtering out known bad patterns
+        name_match = re.search(r'\bname\s*[:\-–]\s*([a-zA-Z][a-zA-Z\s.]{2,30})', text, re.IGNORECASE)
         if name_match:
-            name = name_match.group(1).split('\n')[0].strip()
-        # 2. Extract name from email username
-        elif email_match:
+            candidate_name = name_match.group(1).split('\n')[0].strip().rstrip('.')
+            # Reject if it looks like a skill, section header, or technical term
+            reject_patterns = [
+                r'(?i)(data|science|machine|learning|deep|engineer|education|details|skill|project|company|'
+                r'experience|programming|software|developer|consultant|associate|manager|analyst|intern|'
+                r'recognition|processing|modelling|design|system|web|database|network|cloud|java|python|'
+                r'handwriting|curriculum|objective|summary|technical|professional|certification|training|'
+                r'automation|testing|electrical|mechanical|civil|operations|business|digital|marketing|'
+                r'sales|health|fitness|advocate|arts|sap|sql|aws|html|css|angular|react)'
+            ]
+            if not re.search(reject_patterns[0], candidate_name):
+                name = candidate_name
+            
+        # 2. For uploaded files only: try the first line (real PDF/DOCX resumes start with the name)
+        if (not name or len(name) < 3) and is_uploaded:
+            lines = text.strip().split('\n')
+            for line in lines[:5]:
+                line = line.strip()
+                if not line or len(line) < 3 or len(line) > 40:
+                    continue
+                if re.search(r'[@\d:/\\|]', line):
+                    continue
+                if re.match(r'^(resume|curriculum|vitae|cv|objective|summary|profile|address|phone|email|contact|skills|education|experience)', line, re.IGNORECASE):
+                    continue
+                words = line.split()
+                if 1 <= len(words) <= 4 and all(re.match(r"^[a-zA-Z.'-]+$", w) for w in words):
+                    name = ' '.join(w.capitalize() if w.islower() else w for w in words)
+                    break
+                    
+        # 3. Extract name from email username
+        if (not name or len(name) < 3) and email_match:
             username = email.split('@')[0]
-            # Replace dots/underscores and title-case it (e.g. bhawana.chd -> Bhawana Chd)
             name_parts = re.split(r'[._-]', username)
             name = " ".join([p.capitalize() for p in name_parts if len(p) > 1])
-            # If name is just numbers or weird, clear it
             if not re.match(r'^[a-zA-Z\s]+$', name):
                 name = ""
                 
-        # 3. Fallback to a realistic sample name
+        # 4. Fallback to a sample name (last resort for CSV resumes without identifiable info)
         if not name or len(name) < 3:
             name = SAMPLE_NAMES[index % len(SAMPLE_NAMES)]
             
         return email, name
 
-    def add_candidate(self, resume_text: str, category: str, index: int) -> dict:
+    def add_candidate(self, resume_text: str, category: str, index: int, is_uploaded: bool = False) -> dict:
         """
         Processes a raw resume: extracts basic info, chunks it, embeds it, and stores it in ChromaDB.
         """
-        email, name = self.extract_email_and_name(resume_text, index)
+        email, name = self.extract_email_and_name(resume_text, index, is_uploaded=is_uploaded)
         
         # Avoid duplicate ingestion by checking if this email already exists
         existing = self.collection.get(where={"email": email})
@@ -212,7 +240,7 @@ class DbService:
                     }
         return list(candidates.values())
 
-    def add_new_candidate(self, resume_text: str, category: str) -> dict:
+    def add_new_candidate(self, resume_text: str, category: str, is_uploaded: bool = False) -> dict:
         """
         Indexes a single candidate resume incrementally by finding the next index number.
         """
@@ -226,7 +254,7 @@ class DbService:
                 except ValueError:
                     pass
         next_index = max(indices) + 1 if indices else 0
-        return self.add_candidate(resume_text, category, next_index)
+        return self.add_candidate(resume_text, category, next_index, is_uploaded=is_uploaded)
 
     def load_initial_dataset(self, max_rows: int = None):
         """

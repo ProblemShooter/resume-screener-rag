@@ -4,17 +4,17 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary-50: #ecfdf5;
-  --color-primary-100: #d1fae5;
-  --color-primary-200: #a7f3d0;
-  --color-primary-300: #6ee7b7;
-  --color-primary-400: #34d399;
-  --color-primary-500: #10b981;
-  --color-primary-600: #059669;
-  --color-primary-700: #047857;
-  --color-primary-800: #065f46;
-  --color-primary-900: #064e3b;
-  --color-primary-950: #022c22;
+  --color-primary-50: #f5f7ff;
+  --color-primary-100: #ebf0ff;
+  --color-primary-200: #d6e0ff;
+  --color-primary-300: #b3c7ff;
+  --color-primary-400: #85a4ff;
+  --color-primary-500: #4f75ff;
+  --color-primary-600: #2b4cff;
+  --color-primary-700: #1b32eb;
+  --color-primary-800: #1727be;
+  --color-primary-900: #192696;
+  --color-primary-950: #10175b;
 
   --color-slate-50: #f9fafb;
   --color-slate-100: #f3f4f6;
@@ -23,11 +23,12 @@
   --color-slate-400: #9ca3af;
   --color-slate-500: #6b7280;
   --color-slate-600: #4b5563;
-  --color-slate-700: #374151;
-  --color-slate-800: #1f2937;
-  --color-slate-850: #1c1f26;
-  --color-slate-900: #12141c;
-  --color-slate-950: #090a0f;
+  --color-slate-700: #2A2F39;
+  --color-slate-750: #1D222B;
+  --color-slate-800: #181C23;
+  --color-slate-850: #171A21;
+  --color-slate-900: #111318;
+  --color-slate-950: #0B0B0F;
 }
 
 body {
@@ -67,6 +68,23 @@ body {
   background: rgba(18, 20, 28, 0.85);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(38, 43, 54, 0.5);
+}
+
+/* Dropdown select styling for clear visibility in all themes */
+select {
+  appearance: auto;
+  color-scheme: light;
+}
+.dark select {
+  color-scheme: dark;
+}
+select option {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+.dark select option {
+  background-color: #111318;
+  color: #e2e8f0;
 }
 
 /* Animations */
