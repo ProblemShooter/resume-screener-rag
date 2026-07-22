@@ -63,7 +63,49 @@ Provide your response in raw JSON format. Do not write any preamble, explanation
             
             response_text = chat_completion.choices[0].message.content
             data = json.loads(response_text)
-            return data
+            
+            # Sanitization logic to guarantee all required fields and correct types
+            default_eval = {
+                "overall_match_percentage": 50,
+                "skills_match_percentage": 50,
+                "experience_match_percentage": 50,
+                "education_match_percentage": 50,
+                "project_match_percentage": 50,
+                "strengths": ["Strong engineering interest"],
+                "weaknesses": ["Requires manual evaluation"],
+                "missing_skills": [],
+                "verdict_summary": "Passed preliminary vector ranking. Screen further if top candidates are unsuitable."
+            }
+            if not isinstance(data, dict):
+                return default_eval
+                
+            sanitized = {}
+            for key in ["overall_match_percentage", "skills_match_percentage", "experience_match_percentage", "education_match_percentage", "project_match_percentage"]:
+                val = data.get(key)
+                try:
+                    if val is not None:
+                        if isinstance(val, str):
+                            nums = re.findall(r'\d+', val)
+                            val = int(nums[0]) if nums else 50
+                        sanitized[key] = int(val)
+                    else:
+                        sanitized[key] = default_eval[key]
+                except (ValueError, TypeError, IndexError):
+                    sanitized[key] = default_eval[key]
+                    
+            for key in ["strengths", "weaknesses", "missing_skills"]:
+                val = data.get(key)
+                if isinstance(val, list):
+                    sanitized[key] = [str(item) for item in val if item]
+                elif isinstance(val, str):
+                    sanitized[key] = [val] if val else []
+                else:
+                    sanitized[key] = default_eval[key]
+                    
+            val = data.get("verdict_summary")
+            sanitized["verdict_summary"] = str(val) if val else default_eval["verdict_summary"]
+            
+            return sanitized
             
         except Exception as e:
             logger.error(f"Error evaluating candidate {candidate_name}: {str(e)}")
@@ -87,27 +129,27 @@ Provide your response in raw JSON format. Do not write any preamble, explanation
         logger.info(f"LLM generating interview questions for candidate: {candidate_name}...")
         
         prompt = f"""
-Analyze the Resume against the Job Description. Identify specific skill gaps, experience differences, or potential weaker areas for this candidate.
-Generate 4 highly tailored interview questions (a mix of deep technical questions and scenario-based queries) that will help the interviewer assess these specific areas.
-Do not ask generic questions like "Tell me about yourself." Focus on their gaps.
+        Analyze the Resume against the Job Description. Identify specific skill gaps, experience differences, or potential weaker areas for this candidate.
+        Generate 4 highly tailored interview questions (a mix of deep technical questions and scenario-based queries) that will help the interviewer assess these specific areas.
+        Do not ask generic questions like "Tell me about yourself." Focus on their gaps.
 
-JOB DESCRIPTION:
-{job_description}
+        JOB DESCRIPTION:
+        {job_description}
 
-CANDIDATE RESUME:
-{resume_text}
+        CANDIDATE RESUME:
+        {resume_text}
 
-Output the questions in JSON format. Do not write any markdown formatting or extra text.
-Structure:
-{{
-  "questions": [
-    "Question 1: ...",
-    "Question 2: ...",
-    "Question 3: ...",
-    "Question 4: ..."
-  ]
-}}
-"""
+        Output the questions in JSON format. Do not write any markdown formatting or extra text.
+        Structure:
+        {{
+          "questions": [
+            "Question 1: ...",
+            "Question 2: ...",
+            "Question 3: ...",
+            "Question 4: ..."
+          ]
+        }}
+        """
         try:
             chat_completion = self.client.chat.completions.create(
                 messages=[
@@ -120,7 +162,18 @@ Structure:
             )
             response_text = chat_completion.choices[0].message.content
             data = json.loads(response_text)
-            return data.get("questions", [])
+            
+            raw_questions = data.get("questions", [])
+            questions = []
+            for q in raw_questions:
+                if isinstance(q, dict):
+                    q_text = q.get("question") or q.get("text") or q.get("description") or str(q)
+                    questions.append(q_text)
+                elif isinstance(q, str):
+                    questions.append(q)
+                else:
+                    questions.append(str(q))
+            return questions
         except Exception as e:
             logger.error(f"Error generating questions: {str(e)}")
             return [

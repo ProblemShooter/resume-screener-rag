@@ -27,7 +27,7 @@ frontend/dist/
 frontend/.vite/
 
 # Database / Local DB Cache
-chroma_db/
+# chroma_db/
 
 # Log Files
 *.log
@@ -48,4 +48,4 @@ vite_nohup.log
 Thumbs.db
 
 # Project-specific: User Resume Data (for privacy)
-resumes/
+# resumes/
